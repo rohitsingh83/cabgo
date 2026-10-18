@@ -1,0 +1,32 @@
+{
+  "rules": {
+    ".read": false,
+    ".write": false,
+
+    "driverLocations": {
+      // Riders (nearby-driver map) and admins may watch online drivers. Drivers cannot see each other.
+      ".read": "auth != null && (auth.token.role === 'rider' || auth.token.role === 'admin')",
+      "$driverId": {
+        // The Express realtime server (Admin SDK, which bypasses these rules) is the ONLY writer.
+        // Browsers never write: a compromised client could otherwise spoof any driver's position.
+        ".write": false
+      }
+    },
+
+    "rideParticipants": {
+      // rideParticipants/{rideId}/{userId} = true — written by the realtime server on every ride event.
+      ".read": false,
+      ".write": false
+    },
+
+    "rides": {
+      ".read": false,
+      ".write": false,
+      "$rideId": {
+        // Only the ride's rider and driver (or an admin) can read its live location, status and trail.
+        // Knowing a ride id is no longer enough.
+        ".read": "auth != null && (auth.token.role === 'admin' || root.child('rideParticipants').child($rideId).child(auth.uid).val() === true)"
+      }
+    }
+  }
+}

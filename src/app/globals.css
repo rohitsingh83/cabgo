@@ -1,0 +1,267 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+/* =====================================================================
+   Design tokens — HSL triplets consumed by tailwind.config.ts
+   Light: white surface / black primary.   Dark: #0A0A0A surface / white primary.
+   ===================================================================== */
+@layer base {
+  :root {
+    --font-sans: 'Plus Jakarta Sans Variable', 'Plus Jakarta Sans', Inter, system-ui, sans-serif;
+
+    --background: 0 0% 100%;
+    --foreground: 0 0% 4%;
+
+    --card: 0 0% 100%;
+    --card-foreground: 0 0% 4%;
+
+    --popover: 0 0% 100%;
+    --popover-foreground: 0 0% 4%;
+
+    --primary: 0 0% 0%;
+    --primary-foreground: 0 0% 100%;
+
+    --secondary: 0 0% 96%;
+    --secondary-foreground: 0 0% 9%;
+
+    --muted: 0 0% 96%;
+    --muted-foreground: 0 0% 42%;
+
+    --accent: 0 0% 95%;
+    --accent-foreground: 0 0% 9%;
+
+    --destructive: 0 84% 56%;
+    --destructive-foreground: 0 0% 100%;
+
+    --success: 142 71% 40%;
+    --success-foreground: 0 0% 100%;
+
+    --warning: 38 92% 50%;
+    --warning-foreground: 0 0% 9%;
+
+    --brand: 221 83% 53%; /* #2563EB */
+
+    --border: 0 0% 90%;
+    --input: 0 0% 88%;
+    --ring: 221 83% 53%;
+
+    --radius: 0.75rem;
+  }
+
+  .dark {
+    --background: 0 0% 4%; /* #0A0A0A */
+    --foreground: 0 0% 98%;
+
+    --card: 0 0% 7%;
+    --card-foreground: 0 0% 98%;
+
+    --popover: 0 0% 7%;
+    --popover-foreground: 0 0% 98%;
+
+    --primary: 0 0% 100%;
+    --primary-foreground: 0 0% 0%;
+
+    --secondary: 0 0% 12%;
+    --secondary-foreground: 0 0% 98%;
+
+    --muted: 0 0% 12%;
+    --muted-foreground: 0 0% 64%;
+
+    --accent: 0 0% 14%;
+    --accent-foreground: 0 0% 98%;
+
+    --destructive: 0 72% 55%;
+    --destructive-foreground: 0 0% 100%;
+
+    --success: 142 71% 45%;
+    --success-foreground: 0 0% 4%;
+
+    --warning: 38 92% 55%;
+    --warning-foreground: 0 0% 9%;
+
+    --brand: 217 91% 60%;
+
+    --border: 0 0% 17%;
+    --input: 0 0% 18%;
+    --ring: 217 91% 60%;
+  }
+
+  * {
+    @apply border-border;
+  }
+
+  html {
+    scroll-behavior: smooth;
+    -webkit-tap-highlight-color: transparent;
+  }
+
+  body {
+    @apply bg-background font-sans text-foreground antialiased;
+    font-feature-settings: 'cv02', 'cv03', 'cv04', 'cv11';
+    text-rendering: optimizeLegibility;
+  }
+
+  /* Respect users who prefer reduced motion */
+  @media (prefers-reduced-motion: reduce) {
+    html {
+      scroll-behavior: auto;
+    }
+    *,
+    *::before,
+    *::after {
+      animation-duration: 0.01ms !important;
+      animation-iteration-count: 1 !important;
+      transition-duration: 0.01ms !important;
+    }
+  }
+
+  /* Clean, thin scrollbars */
+  ::-webkit-scrollbar {
+    width: 8px;
+    height: 8px;
+  }
+  ::-webkit-scrollbar-track {
+    background: transparent;
+  }
+  ::-webkit-scrollbar-thumb {
+    background: hsl(var(--muted-foreground) / 0.3);
+    border-radius: 9999px;
+  }
+  ::-webkit-scrollbar-thumb:hover {
+    background: hsl(var(--muted-foreground) / 0.5);
+  }
+
+  ::selection {
+    background: hsl(var(--brand) / 0.25);
+  }
+}
+
+/* =====================================================================
+   Component-level utilities
+   ===================================================================== */
+@layer components {
+  /* Frosted-glass surface (navbars, floating map panels) */
+  .glass {
+    @apply border border-white/20 bg-white/70 backdrop-blur-xl;
+  }
+  .dark .glass {
+    @apply border-white/10 bg-black/50;
+  }
+
+  /* Card with subtle border + lift on hover */
+  .card-hover {
+    @apply transition-all duration-300 ease-out hover:-translate-y-1 hover:shadow-lift;
+  }
+
+  /* Gradient text */
+  .text-gradient {
+    @apply bg-brand-gradient bg-clip-text text-transparent;
+  }
+  .text-gradient-green {
+    @apply bg-brand-gradient-green bg-clip-text text-transparent;
+  }
+
+  /* Animated hero gradient background */
+  .hero-bg {
+    background-image: theme('backgroundImage.hero-gradient');
+    background-size: 400% 400%;
+    @apply animate-gradient-shift;
+  }
+
+  /* Glowing CTA */
+  .btn-glow {
+    @apply shadow-glow transition-shadow duration-300 hover:shadow-[0_0_0_1px_rgba(37,99,235,0.5),0_0_48px_8px_rgba(37,99,235,0.6)];
+  }
+
+  /* Skeleton shimmer (applied by <Skeleton />) */
+  .shimmer {
+    @apply relative overflow-hidden;
+  }
+  .shimmer::after {
+    content: '';
+    @apply absolute inset-0 animate-shimmer;
+    transform: translateX(-100%);
+    background-image: linear-gradient(
+      90deg,
+      transparent,
+      hsl(var(--foreground) / 0.06),
+      transparent
+    );
+  }
+
+  /* Subtle grid backdrop used in hero + empty states */
+  .bg-grid {
+    background-image: theme('backgroundImage.grid-light');
+    background-size: 44px 44px;
+  }
+  .dark .bg-grid {
+    background-image: theme('backgroundImage.grid-dark');
+  }
+
+  /* Animated dashed road line */
+  .road-line {
+    background-image: linear-gradient(90deg, rgba(255, 255, 255, 0.55) 50%, transparent 50%);
+    background-size: 40px 4px;
+    @apply animate-road-dash;
+  }
+
+  /* Hide scrollbars but keep scroll (swipeable card rows) */
+  .no-scrollbar {
+    -ms-overflow-style: none;
+    scrollbar-width: none;
+  }
+  .no-scrollbar::-webkit-scrollbar {
+    display: none;
+  }
+
+  /* Safe-area padding for iOS bottom nav / bottom sheets */
+  .safe-bottom {
+    padding-bottom: max(env(safe-area-inset-bottom), 0.5rem);
+  }
+}
+
+/* =====================================================================
+   Google Maps / Places overrides
+   ===================================================================== */
+.pac-container {
+  @apply rounded-xl border border-border bg-popover font-sans shadow-lift;
+  z-index: 9999 !important;
+  margin-top: 6px;
+}
+.pac-item {
+  @apply cursor-pointer border-t border-border px-3 py-2 text-sm text-muted-foreground;
+}
+.pac-item:hover,
+.pac-item-selected {
+  @apply bg-accent;
+}
+.pac-item-query {
+  @apply text-sm text-foreground;
+}
+.pac-icon {
+  display: none;
+}
+.gm-style .gm-style-iw-c {
+  @apply rounded-xl p-0 shadow-lift;
+}
+.gm-ui-hover-effect {
+  top: 2px !important;
+  right: 2px !important;
+}
+
+/* Marker bounce (class added to custom HTML markers on mount) */
+.marker-drop {
+  @apply animate-marker-bounce;
+}
+
+/* Rotating car marker uses GPU-accelerated transforms */
+.car-marker {
+  transition: transform 0.9s linear;
+  will-change: transform;
+}
+
+/* Clerk components: make them blend with the app's dark mode */
+.cl-rootBox {
+  width: 100%;
+}

@@ -1,0 +1,35 @@
+# Render Blueprint — deploys the Express + Socket.IO realtime server.
+# The Next.js frontend is deployed to Vercel (see README).
+services:
+  - type: web
+    name: cabgo-realtime
+    runtime: docker
+    rootDir: server
+    dockerfilePath: ./Dockerfile
+    region: singapore
+    plan: starter            # WebSockets need an always-on instance; the free plan sleeps
+    healthCheckPath: /health
+    autoDeploy: true
+    # Socket.IO keeps room state in memory → run exactly ONE instance (see README → Scaling).
+    numInstances: 1
+    envVars:
+      - key: NODE_ENV
+        value: production
+      - key: CORS_ORIGINS
+        sync: false          # e.g. https://cabgo.vercel.app (comma separated)
+      - key: CLERK_SECRET_KEY
+        sync: false
+      - key: SUPABASE_URL
+        sync: false
+      - key: SUPABASE_SERVICE_ROLE_KEY
+        sync: false
+      - key: REALTIME_INTERNAL_SECRET
+        sync: false          # must equal REALTIME_INTERNAL_SECRET on Vercel
+      - key: FIREBASE_DATABASE_URL
+        sync: false
+      - key: FIREBASE_ADMIN_PROJECT_ID
+        sync: false
+      - key: FIREBASE_ADMIN_CLIENT_EMAIL
+        sync: false
+      - key: FIREBASE_ADMIN_PRIVATE_KEY
+        sync: false
