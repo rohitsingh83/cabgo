@@ -1,0 +1,439 @@
+<!DOCTYPE html>
+<html lang="en" class="dark">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>CabGo — Full-Stack Ride Hailing Platform</title>
+  <meta name="description" content="A production-grade, Uber/Ola/Rapido-style cab booking platform with Rider, Driver, and Admin portals, live GPS tracking, and Stripe payments." />
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@400;500;600;700;800;900&family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script>
+    tailwind.config = {
+      darkMode: 'class',
+      theme: {
+        extend: {
+          fontFamily: {
+            sans: ['"Plus Jakarta Sans"', 'sans-serif'],
+            display: ['"Outfit"', 'sans-serif'],
+          },
+          colors: {
+            brand: {
+              50: '#eff6ff',
+              500: '#2563eb',
+              600: '#1d4ed8',
+              700: '#1e40af',
+            },
+            dark: {
+              900: '#090d16',
+              800: '#0f172a',
+              700: '#1e293b',
+            }
+          }
+        }
+      }
+    }
+  </script>
+  <style>
+    body {
+      background-color: #07090e;
+      color: #f1f5f9;
+      font-family: 'Plus Jakarta Sans', sans-serif;
+    }
+    .glass-panel {
+      background: rgba(15, 23, 42, 0.7);
+      backdrop-filter: blur(16px);
+      -webkit-backdrop-filter: blur(16px);
+      border: 1px solid rgba(255, 255, 255, 0.08);
+    }
+    .gradient-text {
+      background: linear-gradient(135deg, #60a5fa 0%, #3b82f6 50%, #93c5fd 100%);
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+    }
+    .badge-glow {
+      box-shadow: 0 0 20px rgba(37, 99, 235, 0.35);
+    }
+  </style>
+</head>
+<body class="min-h-screen selection:bg-blue-600 selection:text-white">
+  <!-- Top Navigation -->
+  <header class="sticky top-0 z-50 glass-panel border-b border-white/5">
+    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 h-20 flex items-center justify-between">
+      <div class="flex items-center gap-3">
+        <div class="h-11 w-11 rounded-2xl bg-gradient-to-tr from-blue-600 to-indigo-500 flex items-center justify-center font-display font-extrabold text-xl text-white shadow-lg shadow-blue-500/25">
+          CG
+        </div>
+        <div>
+          <span class="font-display font-extrabold text-2xl tracking-tight text-white">CabGo</span>
+          <span class="hidden sm:inline-block ml-2 px-2.5 py-0.5 rounded-full text-[11px] font-semibold tracking-wide uppercase bg-blue-500/10 text-blue-400 border border-blue-500/20">
+            Production Ready v1.0
+          </span>
+        </div>
+      </div>
+
+      <div class="flex items-center gap-3 sm:gap-4">
+        <a href="https://github.com/rohitsingh83/cabgo" target="_blank" rel="noopener noreferrer" 
+           class="inline-flex items-center gap-2 px-4 py-2.5 rounded-xl text-sm font-semibold text-slate-300 hover:text-white bg-slate-800/80 hover:bg-slate-700/80 border border-slate-700 transition-all">
+          <svg class="h-4 w-4 fill-current" viewBox="0 0 24 24"><path d="M12 0C5.37 0 0 5.37 0 12c0 5.31 3.435 9.795 8.205 11.385.6.105.825-.255.825-.57 0-.285-.015-1.23-.015-2.235-3.015.555-3.795-.735-4.035-1.41-.135-.345-.72-1.41-1.23-1.695-.42-.225-1.02-.78-.015-.795.945-.015 1.62.87 1.845 1.23 1.08 1.815 2.805 1.305 3.495.99.105-.78.42-1.305.765-1.605-2.67-.3-5.46-1.335-5.46-5.925 0-1.305.465-2.385 1.23-3.225-.12-.3-.54-1.53.12-3.18 0 0 1.005-.315 3.3 1.23.96-.27 1.98-.405 3-.405s2.04.135 3 .405c2.295-1.56 3.3-1.23 3.3-1.23.66 1.65.24 2.88.12 3.18.765.84 1.23 1.905 1.23 3.225 0 4.605-2.805 5.625-5.475 5.925.435.375.81 1.095.81 2.22 0 1.605-.015 2.895-.015 3.3 0 .315.225.69.825.57A12.02 12.02 0 0024 12c0-6.63-5.37-12-12-12z"/></svg>
+          <span>GitHub Code</span>
+        </a>
+
+        <a href="https://vercel.com/new/clone?repository-url=https://github.com/rohitsingh83/cabgo" target="_blank" rel="noopener noreferrer"
+           class="inline-flex items-center gap-2 px-5 py-2.5 rounded-xl text-sm font-bold text-white bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-500 hover:to-indigo-500 shadow-lg shadow-blue-500/25 transition-all">
+          <span>Deploy to Vercel</span>
+          <svg class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M14 5l7 7m0 0l-7 7m7-7H3"/></svg>
+        </a>
+      </div>
+    </div>
+  </header>
+
+  <!-- Hero Section -->
+  <main class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-16 sm:py-24">
+    <div class="text-center max-w-4xl mx-auto">
+      <div class="inline-flex items-center gap-2 px-4 py-2 rounded-full glass-panel border border-blue-500/30 text-blue-400 text-sm font-semibold mb-8 badge-glow">
+        <span class="h-2 w-2 rounded-full bg-emerald-400 animate-pulse"></span>
+        Enterprise-Grade Ride Hailing Platform
+      </div>
+
+      <h1 class="font-display font-extrabold text-4xl sm:text-6xl lg:text-7xl tracking-tight leading-[1.1] text-white">
+        Urban Mobility Reimagined with <span class="gradient-text">CabGo</span>
+      </h1>
+
+      <p class="mt-6 text-lg sm:text-xl text-slate-400 leading-relaxed max-w-3xl mx-auto">
+        A full-stack, hyper-responsive cab platform with dedicated <strong class="text-white">Rider</strong>, <strong class="text-white">Driver</strong>, and <strong class="text-white">Admin</strong> portals. Featuring live GPS tracking, dynamic fare calculation, SOS safety, and seamless payments.
+      </p>
+
+      <!-- Key Service Status Badges -->
+      <div class="mt-10 flex flex-wrap items-center justify-center gap-3 text-xs sm:text-sm font-medium">
+        <div class="glass-panel px-3.5 py-2 rounded-xl border border-emerald-500/30 text-emerald-400 flex items-center gap-2">
+          <svg class="h-4 w-4" fill="currentColor" viewBox="0 0 20 20"><path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clip-rule="evenodd"/></svg>
+          Supabase PostgreSQL (12 Tables)
+        </div>
+        <div class="glass-panel px-3.5 py-2 rounded-xl border border-blue-500/30 text-blue-400 flex items-center gap-2">
+          <svg class="h-4 w-4" fill="currentColor" viewBox="0 0 20 20"><path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clip-rule="evenodd"/></svg>
+          Clerk Authentication & Role Guards
+        </div>
+        <div class="glass-panel px-3.5 py-2 rounded-xl border border-purple-500/30 text-purple-400 flex items-center gap-2">
+          <svg class="h-4 w-4" fill="currentColor" viewBox="0 0 20 20"><path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clip-rule="evenodd"/></svg>
+          Socket.IO GPS Streaming Engine
+        </div>
+        <div class="glass-panel px-3.5 py-2 rounded-xl border border-amber-500/30 text-amber-400 flex items-center gap-2">
+          <svg class="h-4 w-4" fill="currentColor" viewBox="0 0 20 20"><path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clip-rule="evenodd"/></svg>
+          Google Maps Platform
+        </div>
+      </div>
+    </div>
+
+    <!-- Interactive Interactive Section: Fare Calculator & Role Preview -->
+    <div class="mt-20 grid grid-cols-1 lg:grid-cols-12 gap-8 items-start">
+      <!-- Left: Interactive Fare Engine -->
+      <div class="lg:col-span-5 glass-panel rounded-3xl p-6 sm:p-8 border border-white/10 shadow-2xl">
+        <div class="flex items-center justify-between pb-6 border-b border-white/10">
+          <div>
+            <h2 class="font-display font-extrabold text-2xl text-white">Live Fare Calculator</h2>
+            <p class="text-xs text-slate-400 mt-1">Real-time dynamic pricing model</p>
+          </div>
+          <span class="px-3 py-1 rounded-full text-xs font-bold bg-blue-500/20 text-blue-400 border border-blue-500/30">
+            INR (₹)
+          </span>
+        </div>
+
+        <div class="mt-6 space-y-5">
+          <!-- Distance Slider -->
+          <div>
+            <div class="flex justify-between text-sm font-semibold mb-2">
+              <span class="text-slate-300">Ride Distance</span>
+              <span id="distVal" class="text-blue-400 font-bold">12.5 km</span>
+            </div>
+            <input type="range" id="distRange" min="1" max="50" step="0.5" value="12.5" 
+                   class="w-full h-2 bg-slate-800 rounded-lg appearance-none cursor-pointer accent-blue-500" 
+                   oninput="updateFare()" />
+          </div>
+
+          <!-- Vehicle Type Selector -->
+          <div>
+            <label class="block text-sm font-semibold text-slate-300 mb-2">Vehicle Category</label>
+            <div class="grid grid-cols-2 gap-2" id="vehicleSelector">
+              <button onclick="selectVehicle('bike', 25, 8, 30)" class="v-btn p-3 rounded-2xl glass-panel border border-blue-500/50 bg-blue-500/10 text-left transition-all">
+                <span class="text-lg">🏍️</span>
+                <p class="font-bold text-sm text-white mt-1">CabGo Bike</p>
+                <p class="text-[11px] text-slate-400">Fast & compact</p>
+              </button>
+              <button onclick="selectVehicle('auto', 35, 11, 40)" class="v-btn p-3 rounded-2xl glass-panel border border-white/5 text-left transition-all hover:border-white/20">
+                <span class="text-lg">🛺</span>
+                <p class="font-bold text-sm text-white mt-1">CabGo Auto</p>
+                <p class="text-[11px] text-slate-400">Everyday city rides</p>
+              </button>
+              <button onclick="selectVehicle('sedan', 50, 15, 60)" class="v-btn p-3 rounded-2xl glass-panel border border-white/5 text-left transition-all hover:border-white/20">
+                <span class="text-lg">🚗</span>
+                <p class="font-bold text-sm text-white mt-1">CabGo Sedan</p>
+                <p class="text-[11px] text-slate-400">AC comfort for 4</p>
+              </button>
+              <button onclick="selectVehicle('suv', 80, 20, 90)" class="v-btn p-3 rounded-2xl glass-panel border border-white/5 text-left transition-all hover:border-white/20">
+                <span class="text-lg">🚙</span>
+                <p class="font-bold text-sm text-white mt-1">CabGo SUV</p>
+                <p class="text-[11px] text-slate-400">Spacious 6-seater</p>
+              </button>
+            </div>
+          </div>
+
+          <!-- Surge Multiplier Toggle -->
+          <div class="pt-2 flex items-center justify-between">
+            <span class="text-sm font-semibold text-slate-300">Peak Demand Surge</span>
+            <div class="flex items-center gap-2">
+              <button onclick="setSurge(1.0)" id="surge1" class="px-2.5 py-1 rounded-lg text-xs font-bold bg-blue-600 text-white">1.0×</button>
+              <button onclick="setSurge(1.3)" id="surge2" class="px-2.5 py-1 rounded-lg text-xs font-bold bg-slate-800 text-slate-300 hover:bg-slate-700">1.3×</button>
+              <button onclick="setSurge(1.8)" id="surge3" class="px-2.5 py-1 rounded-lg text-xs font-bold bg-slate-800 text-slate-300 hover:bg-slate-700">1.8×</button>
+            </div>
+          </div>
+
+          <!-- Fare Result Box -->
+          <div class="mt-6 p-5 rounded-2xl bg-gradient-to-br from-blue-950/40 to-slate-900 border border-blue-500/20">
+            <div class="flex items-baseline justify-between">
+              <span class="text-xs uppercase tracking-wider text-slate-400 font-semibold">Estimated Fare</span>
+              <span id="finalFare" class="font-display font-extrabold text-3xl text-white">₹125</span>
+            </div>
+            <div class="mt-3 text-xs text-slate-400 space-y-1 border-t border-white/5 pt-3">
+              <div class="flex justify-between"><span>Base Fare:</span><span id="baseFareText">₹25</span></div>
+              <div class="flex justify-between"><span>Distance Rate:</span><span id="distFareText">₹100 (₹8/km)</span></div>
+              <div class="flex justify-between"><span>Platform & Taxes:</span><span>Included</span></div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Right: Three App Portals Showcase -->
+      <div class="lg:col-span-7 space-y-6">
+        <!-- Tab Buttons -->
+        <div class="flex p-1.5 rounded-2xl glass-panel border border-white/10 gap-2">
+          <button onclick="switchTab('rider')" id="tab-rider" class="flex-1 py-3 px-4 rounded-xl font-bold text-sm text-white bg-blue-600 shadow-md transition-all">
+            👤 Rider Portal
+          </button>
+          <button onclick="switchTab('driver')" id="tab-driver" class="flex-1 py-3 px-4 rounded-xl font-bold text-sm text-slate-400 hover:text-white transition-all">
+            🚘 Driver Portal
+          </button>
+          <button onclick="switchTab('admin')" id="tab-admin" class="flex-1 py-3 px-4 rounded-xl font-bold text-sm text-slate-400 hover:text-white transition-all">
+            🛡️ Admin Console
+          </button>
+        </div>
+
+        <!-- Rider Tab Content -->
+        <div id="content-rider" class="glass-panel rounded-3xl p-6 sm:p-8 border border-white/10 space-y-6">
+          <div class="flex items-center justify-between">
+            <div>
+              <span class="text-xs font-bold text-emerald-400 uppercase tracking-widest">Rider Experience</span>
+              <h3 class="font-display font-bold text-2xl text-white mt-1">Multi-Stop Booking & Live GPS</h3>
+            </div>
+            <span class="px-3 py-1 rounded-full text-xs font-semibold bg-emerald-500/10 text-emerald-400 border border-emerald-500/20">
+              Active Persona: Priya Sharma
+            </span>
+          </div>
+
+          <div class="grid grid-cols-1 sm:grid-cols-2 gap-4 text-sm">
+            <div class="p-4 rounded-2xl bg-slate-900/60 border border-white/5">
+              <p class="font-bold text-white flex items-center gap-2">📍 Intelligent Routing</p>
+              <p class="text-xs text-slate-400 mt-2">Up to 3 multi-stops with automatic optimal trajectory, distance recalculation, and ETA forecast.</p>
+            </div>
+            <div class="p-4 rounded-2xl bg-slate-900/60 border border-white/5">
+              <p class="font-bold text-white flex items-center gap-2">📡 Live Breadcrumb Map</p>
+              <p class="text-xs text-slate-400 mt-2">Smooth 1-second interval driver car animations powered by Socket.IO room fan-out.</p>
+            </div>
+            <div class="p-4 rounded-2xl bg-slate-900/60 border border-white/5">
+              <p class="font-bold text-white flex items-center gap-2">💳 Stripe & Cash Checkout</p>
+              <p class="text-xs text-slate-400 mt-2">Pay securely by card, UPI, wallet, or in-person Cash settlement with instant tax invoices.</p>
+            </div>
+            <div class="p-4 rounded-2xl bg-slate-900/60 border border-white/5">
+              <p class="font-bold text-white flex items-center gap-2">🚨 One-Tap SOS Alert</p>
+              <p class="text-xs text-slate-400 mt-2">Emergency trigger alerting contacts via SMS and instantly surfacing on live admin security desks.</p>
+            </div>
+          </div>
+        </div>
+
+        <!-- Driver Tab Content -->
+        <div id="content-driver" class="hidden glass-panel rounded-3xl p-6 sm:p-8 border border-white/10 space-y-6">
+          <div class="flex items-center justify-between">
+            <div>
+              <span class="text-xs font-bold text-blue-400 uppercase tracking-widest">Driver Experience</span>
+              <h3 class="font-display font-bold text-2xl text-white mt-1">Ride Dispatch, Telemetry & Earnings</h3>
+            </div>
+            <span class="px-3 py-1 rounded-full text-xs font-semibold bg-blue-500/10 text-blue-400 border border-blue-500/20">
+              Active Persona: Ravi Kumar
+            </span>
+          </div>
+
+          <div class="grid grid-cols-1 sm:grid-cols-2 gap-4 text-sm">
+            <div class="p-4 rounded-2xl bg-slate-900/60 border border-white/5">
+              <p class="font-bold text-white flex items-center gap-2">⚡ 30s Dispatch Radar</p>
+              <p class="text-xs text-slate-400 mt-2">Automatic Geospatial matching within 5-10 km radius with sound effects and accept/decline timer.</p>
+            </div>
+            <div class="p-4 rounded-2xl bg-slate-900/60 border border-white/5">
+              <p class="font-bold text-white flex items-center gap-2">📊 Daily & Weekly Earnings</p>
+              <p class="text-xs text-slate-400 mt-2">Detailed gross breakdown, platform fee calculation (80% driver take-home), and trip history.</p>
+            </div>
+            <div class="p-4 rounded-2xl bg-slate-900/60 border border-white/5">
+              <p class="font-bold text-white flex items-center gap-2">📑 Document Verification</p>
+              <p class="text-xs text-slate-400 mt-2">Driving license, RC, insurance upload to private Supabase storage with status badges.</p>
+            </div>
+            <div class="p-4 rounded-2xl bg-slate-900/60 border border-white/5">
+              <p class="font-bold text-white flex items-center gap-2">🟢 One-Click Online Switch</p>
+              <p class="text-xs text-slate-400 mt-2">Automatic heartbeat tracking; auto-offline cleanup on disconnect.</p>
+            </div>
+          </div>
+        </div>
+
+        <!-- Admin Tab Content -->
+        <div id="content-admin" class="hidden glass-panel rounded-3xl p-6 sm:p-8 border border-white/10 space-y-6">
+          <div class="flex items-center justify-between">
+            <div>
+              <span class="text-xs font-bold text-purple-400 uppercase tracking-widest">Command Center</span>
+              <h3 class="font-display font-bold text-2xl text-white mt-1">Fleet Analytics, Promos & Security</h3>
+            </div>
+            <span class="px-3 py-1 rounded-full text-xs font-semibold bg-purple-500/10 text-purple-400 border border-purple-500/20">
+              Active Persona: Aarav Mehta
+            </span>
+          </div>
+
+          <div class="grid grid-cols-1 sm:grid-cols-2 gap-4 text-sm">
+            <div class="p-4 rounded-2xl bg-slate-900/60 border border-white/5">
+              <p class="font-bold text-white flex items-center gap-2">📈 High-Performance KPIs</p>
+              <p class="text-xs text-slate-400 mt-2">Revenue, active drivers, ride completion rates, and average trip values charted via Recharts.</p>
+            </div>
+            <div class="p-4 rounded-2xl bg-slate-900/60 border border-white/5">
+              <p class="font-bold text-white flex items-center gap-2">🎟️ Promo Code Management</p>
+              <p class="text-xs text-slate-400 mt-2">Create percentage/flat coupon discounts with usage caps, minimum fares, and expiry limits.</p>
+            </div>
+            <div class="p-4 rounded-2xl bg-slate-900/60 border border-white/5">
+              <p class="font-bold text-white flex items-center gap-2">🚨 Live SOS Incident Desk</p>
+              <p class="text-xs text-slate-400 mt-2">Real-time alerts with driver/rider profiles, route GPS snapshot, and resolve/contact actions.</p>
+            </div>
+            <div class="p-4 rounded-2xl bg-slate-900/60 border border-white/5">
+              <p class="font-bold text-white flex items-center gap-2">📥 1-Click CSV Exports</p>
+              <p class="text-xs text-slate-400 mt-2">Export sanitized payment reports, ride histories, driver logs, and support audit trails.</p>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Architecture & Tech Stack Grid -->
+    <div class="mt-24">
+      <div class="text-center max-w-2xl mx-auto mb-12">
+        <h2 class="font-display font-extrabold text-3xl sm:text-4xl text-white">Full-Stack Architecture</h2>
+        <p class="text-sm text-slate-400 mt-3">Built with battle-tested frameworks and decoupled micro-services</p>
+      </div>
+
+      <div class="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-6 gap-4">
+        <div class="glass-panel p-5 rounded-2xl text-center border border-white/5 hover:border-blue-500/30 transition-all">
+          <div class="h-10 w-10 mx-auto rounded-xl bg-slate-800 flex items-center justify-center text-xl font-bold">▲</div>
+          <p class="font-bold text-sm text-white mt-3">Next.js 14</p>
+          <p class="text-[11px] text-slate-400 mt-1">App Router & SSR</p>
+        </div>
+        <div class="glass-panel p-5 rounded-2xl text-center border border-white/5 hover:border-emerald-500/30 transition-all">
+          <div class="h-10 w-10 mx-auto rounded-xl bg-emerald-950/40 text-emerald-400 flex items-center justify-center text-xl font-bold">⚡</div>
+          <p class="font-bold text-sm text-white mt-3">Supabase</p>
+          <p class="text-[11px] text-slate-400 mt-1">Postgres & RLS</p>
+        </div>
+        <div class="glass-panel p-5 rounded-2xl text-center border border-white/5 hover:border-blue-500/30 transition-all">
+          <div class="h-10 w-10 mx-auto rounded-xl bg-blue-950/40 text-blue-400 flex items-center justify-center text-xl font-bold">🔐</div>
+          <p class="font-bold text-sm text-white mt-3">Clerk Auth</p>
+          <p class="text-[11px] text-slate-400 mt-1">Role Middleware</p>
+        </div>
+        <div class="glass-panel p-5 rounded-2xl text-center border border-white/5 hover:border-purple-500/30 transition-all">
+          <div class="h-10 w-10 mx-auto rounded-xl bg-purple-950/40 text-purple-400 flex items-center justify-center text-xl font-bold">📡</div>
+          <p class="font-bold text-sm text-white mt-3">Socket.IO</p>
+          <p class="text-[11px] text-slate-400 mt-1">Realtime GPS</p>
+        </div>
+        <div class="glass-panel p-5 rounded-2xl text-center border border-white/5 hover:border-indigo-500/30 transition-all">
+          <div class="h-10 w-10 mx-auto rounded-xl bg-indigo-950/40 text-indigo-400 flex items-center justify-center text-xl font-bold">💳</div>
+          <p class="font-bold text-sm text-white mt-3">Stripe</p>
+          <p class="text-[11px] text-slate-400 mt-1">Payment Intents</p>
+        </div>
+        <div class="glass-panel p-5 rounded-2xl text-center border border-white/5 hover:border-amber-500/30 transition-all">
+          <div class="h-10 w-10 mx-auto rounded-xl bg-amber-950/40 text-amber-400 flex items-center justify-center text-xl font-bold">🗺️</div>
+          <p class="font-bold text-sm text-white mt-3">Google Maps</p>
+          <p class="text-[11px] text-slate-400 mt-1">Places & Matrix</p>
+        </div>
+      </div>
+    </div>
+  </main>
+
+  <!-- Footer -->
+  <footer class="border-t border-white/10 glass-panel py-12 mt-20">
+    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 flex flex-col sm:flex-row items-center justify-between gap-4 text-xs text-slate-400">
+      <div class="flex items-center gap-2">
+        <span class="font-display font-extrabold text-base text-white">CabGo</span>
+        <span>— Developed for Labmentix Project.</span>
+      </div>
+      <div class="flex items-center gap-6">
+        <a href="https://github.com/rohitsingh83/cabgo" class="hover:text-white transition-colors">GitHub Repository</a>
+        <a href="https://vercel.com/new/clone?repository-url=https://github.com/rohitsingh83/cabgo" class="text-blue-400 hover:text-blue-300 font-semibold transition-colors">Deploy to Vercel</a>
+      </div>
+    </div>
+  </footer>
+
+  <script>
+    // Fare Calculator Logic
+    let currentBase = 25;
+    let currentPerKm = 8;
+    let currentMinFare = 30;
+    let currentSurge = 1.0;
+
+    function selectVehicle(type, base, perKm, minFare) {
+      currentBase = base;
+      currentPerKm = perKm;
+      currentMinFare = minFare;
+      
+      const buttons = document.querySelectorAll('#vehicleSelector .v-btn');
+      buttons.forEach(btn => {
+        btn.classList.remove('border-blue-500/50', 'bg-blue-500/10');
+        btn.classList.add('border-white/5');
+      });
+      event.currentTarget.classList.remove('border-white/5');
+      event.currentTarget.classList.add('border-blue-500/50', 'bg-blue-500/10');
+
+      updateFare();
+    }
+
+    function setSurge(surge) {
+      currentSurge = surge;
+      ['surge1', 'surge2', 'surge3'].forEach(id => {
+        const el = document.getElementById(id);
+        el.className = 'px-2.5 py-1 rounded-lg text-xs font-bold bg-slate-800 text-slate-300 hover:bg-slate-700';
+      });
+      event.currentTarget.className = 'px-2.5 py-1 rounded-lg text-xs font-bold bg-blue-600 text-white';
+      updateFare();
+    }
+
+    function updateFare() {
+      const dist = parseFloat(document.getElementById('distRange').value);
+      document.getElementById('distVal').innerText = dist.toFixed(1) + ' km';
+
+      const distFare = dist * currentPerKm;
+      const rawTotal = (currentBase + distFare) * currentSurge;
+      const finalFare = Math.max(currentMinFare, Math.round(rawTotal));
+
+      document.getElementById('finalFare').innerText = '₹' + finalFare;
+      document.getElementById('baseFareText').innerText = '₹' + currentBase;
+      document.getElementById('distFareText').innerText = '₹' + Math.round(distFare) + ' (₹' + currentPerKm + '/km)';
+    }
+
+    // Role Tab Switcher Logic
+    function switchTab(role) {
+      ['rider', 'driver', 'admin'].forEach(r => {
+        document.getElementById('content-' + r).classList.add('hidden');
+        const tabBtn = document.getElementById('tab-' + r);
+        tabBtn.className = 'flex-1 py-3 px-4 rounded-xl font-bold text-sm text-slate-400 hover:text-white transition-all';
+      });
+
+      document.getElementById('content-' + role).classList.remove('hidden');
+      const activeBtn = document.getElementById('tab-' + role);
+      activeBtn.className = 'flex-1 py-3 px-4 rounded-xl font-bold text-sm text-white bg-blue-600 shadow-md transition-all';
+    }
+
+    // Initial calculation
+    updateFare();
+  </script>
+</body>
+</html>
