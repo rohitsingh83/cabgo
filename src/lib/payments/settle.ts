@@ -68,7 +68,7 @@ async function refundDuplicate(intent: Stripe.PaymentIntent): Promise<void> {
 }
 
 /** Notifications, realtime nudge and receipt email after a payment turns `completed`. Never throws. */
-async function onPaymentCompleted(payment: Payment): Promise<void> {
+export async function onPaymentCompleted(payment: Payment): Promise<void> {
   const db = createSupabaseAdminClient();
   try {
     const { data: ride } = await db

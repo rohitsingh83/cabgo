@@ -5,7 +5,7 @@ import type Stripe from 'stripe';
 import { ApiError } from '@/lib/api';
 import { CURRENCY } from '@/lib/constants';
 import { payableFor, splitPayment } from '@/lib/payments/service';
-import { markRefunded, settleCheckoutSession, settlePaymentIntent } from '@/lib/payments/settle';
+import { markRefunded, onPaymentCompleted, settleCheckoutSession, settlePaymentIntent } from '@/lib/payments/settle';
 import { MIN_CHARGE_MINOR, toMinorUnits } from '@/lib/stripe/amounts';
 import { getStripe } from '@/lib/stripe/server';
 import { createSupabaseAdminClient } from '@/lib/supabase/admin';
@@ -284,3 +284,43 @@ export async function refundPayment(
     throw new Error('Refund succeeded at Stripe but the payment row could not be updated');
   return refunded;
 }
+
+/**
+ * Alternative payment method: pay directly with Cash or in Demo mode.
+ * Immediately completes the payment row, updates the ride, sends notifications,
+ * and emits realtime events without requiring Stripe.
+ */
+export async function payWithCashOrDemo(
+  user: Pick<User, 'id'>,
+  rideId: string,
+): Promise<ConfirmPaymentResult> {
+  const { ride, amount } = await loadPayableRide(user, rideId);
+  const payment = await ensurePaymentRow(ride, amount);
+
+  if (payment.status === 'completed') {
+    return { state: 'completed', payment };
+  }
+
+  const db = createSupabaseAdminClient();
+  const { data: updated, error } = await db
+    .from('payments')
+    .update({
+      status: 'completed',
+      payment_method: 'cash',
+      failure_reason: null,
+    })
+    .eq('id', payment.id)
+    .in('status', ['pending', 'failed'])
+    .select('*')
+    .maybeSingle();
+
+  if (error) throw new Error(`Failed to complete payment: ${error.message}`);
+
+  const settled = updated ?? ((await db.from('payments').select('*').eq('id', payment.id).maybeSingle()).data as Payment);
+  if (settled) {
+    await onPaymentCompleted(settled);
+  }
+
+  return { state: 'completed', payment: settled };
+}
+

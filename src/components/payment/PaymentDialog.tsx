@@ -3,7 +3,7 @@
 import { useCallback, useEffect, useState } from 'react';
 import { Elements } from '@stripe/react-stripe-js';
 import type { Appearance } from '@stripe/stripe-js';
-import { AlertCircle, CreditCard, RefreshCw } from 'lucide-react';
+import { AlertCircle, Banknote, CreditCard, Loader2, RefreshCw } from 'lucide-react';
 import { useTheme } from 'next-themes';
 
 import { CheckoutForm } from '@/components/payment/CheckoutForm';
@@ -78,9 +78,33 @@ export function PaymentDialog({ open, onOpenChange, rideId, onResult }: PaymentD
     }
   }, [rideId]);
 
+  const [cashSubmitting, setCashSubmitting] = useState(false);
+  const [cashError, setCashError] = useState<string | null>(null);
+
+  const handleCashPayment = async () => {
+    setCashSubmitting(true);
+    setCashError(null);
+    try {
+      const result = await apiFetch<ConfirmPaymentResult>('/api/payments/cash', {
+        method: 'POST',
+        body: { rideId },
+      });
+      handleResult(result);
+    } catch (err) {
+      setCashError(
+        err instanceof ApiClientError ? err.message : 'Failed to complete cash payment.',
+      );
+    } finally {
+      setCashSubmitting(false);
+    }
+  };
+
   useEffect(() => {
     if (open && configured) void load();
-    if (!open) setState({ status: 'idle' });
+    if (!open) {
+      setState({ status: 'idle' });
+      setCashError(null);
+    }
   }, [open, configured, load]);
 
   const handleResult = (result: ConfirmPaymentResult) => {
@@ -107,7 +131,7 @@ export function PaymentDialog({ open, onOpenChange, rideId, onResult }: PaymentD
                 <strong className="text-foreground">
                   {formatCurrency(state.intent.amount, state.intent.currency)}
                 </strong>{' '}
-                by card, UPI or wallet.
+                by card, UPI, wallet or cash.
               </>
             ) : (
               'Choose how you want to pay.'
@@ -116,15 +140,36 @@ export function PaymentDialog({ open, onOpenChange, rideId, onResult }: PaymentD
         </DialogHeader>
 
         {!configured && (
-          <div
-            role="alert"
-            className="flex items-start gap-3 rounded-xl border border-amber-500/30 bg-amber-500/10 p-4 text-sm"
-          >
-            <CreditCard className="mt-0.5 h-5 w-5 shrink-0 text-amber-500" aria-hidden />
-            <p>
-              Online payments aren&apos;t set up on this server yet. Add your Stripe publishable key
-              to enable them.
-            </p>
+          <div className="space-y-4">
+            <div
+              role="alert"
+              className="flex items-start gap-3 rounded-xl border border-amber-500/30 bg-amber-500/10 p-4 text-sm"
+            >
+              <CreditCard className="mt-0.5 h-5 w-5 shrink-0 text-amber-500" aria-hidden />
+              <p>
+                Online card gateway is not enabled. You can complete this payment directly using
+                Cash or Demo settlement.
+              </p>
+            </div>
+
+            {cashError && (
+              <div role="alert" className="rounded-xl border border-destructive/30 bg-destructive/10 p-3 text-sm text-destructive">
+                {cashError}
+              </div>
+            )}
+
+            <Button
+              className="h-12 w-full gap-2 font-semibold text-base"
+              onClick={handleCashPayment}
+              disabled={cashSubmitting}
+            >
+              {cashSubmitting ? (
+                <Loader2 className="h-5 w-5 animate-spin" />
+              ) : (
+                <Banknote className="h-5 w-5" />
+              )}
+              Pay with Cash / Demo
+            </Button>
           </div>
         )}
 
@@ -178,6 +223,20 @@ export function PaymentDialog({ open, onOpenChange, rideId, onResult }: PaymentD
               any future date, any CVC.
             </p>
           )}
+
+        {configured && state.status === 'ready' && (
+          <div className="pt-2 border-t border-border">
+            <Button
+              variant="outline"
+              className="h-10 w-full gap-2 text-xs font-medium text-muted-foreground hover:text-foreground"
+              onClick={handleCashPayment}
+              disabled={cashSubmitting}
+            >
+              {cashSubmitting ? <Loader2 className="h-3.5 w-3.5 animate-spin" /> : <Banknote className="h-4 w-4" />}
+              Pay with Cash instead
+            </Button>
+          </div>
+        )}
       </DialogContent>
     </Dialog>
   );
