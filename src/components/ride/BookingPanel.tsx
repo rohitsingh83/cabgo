@@ -11,7 +11,7 @@ import { VehicleSelector } from '@/components/ride/VehicleSelector';
 import { Button } from '@/components/ui/button';
 import { toast } from '@/components/ui/use-toast';
 import { VEHICLES } from '@/lib/constants';
-import { ApiClientError, apiFetch } from '@/lib/api-client';
+import { ApiClientError, apiFetch, isApiClientError } from '@/lib/api-client';
 import { formatCurrency } from '@/lib/utils';
 import { useBookingStore } from '@/store/useBookingStore';
 import type { CreateRideResult, FareEstimateResponse, SavedPlace } from '@/types';
@@ -83,7 +83,7 @@ export function BookingPanel({ savedPlaces, estimate }: BookingPanelProps) {
       router.push(`/rider/tracking/${result.ride.id}`);
     } catch (err) {
       setSubmitting(false);
-      if (err instanceof ApiClientError) {
+      if (isApiClientError(err)) {
         const activeRideId = err.details?.rideId?.[0];
         if (err.status === 409 && activeRideId) {
           toast({ title: 'You already have a ride', description: 'Taking you to it…' });
@@ -104,7 +104,11 @@ export function BookingPanel({ savedPlaces, estimate }: BookingPanelProps) {
         toast({ variant: 'destructive', title: 'Could not book your ride', description: err.message });
         return;
       }
-      toast({ variant: 'destructive', title: 'Could not book your ride', description: 'Something went wrong. Please try again.' });
+      toast({
+        variant: 'destructive',
+        title: 'Could not book your ride',
+        description: (err as Error)?.message || 'Something went wrong. Please try again.',
+      });
     }
   };
 

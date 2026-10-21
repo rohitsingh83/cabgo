@@ -14,8 +14,26 @@ export class ApiClientError extends Error {
     this.name = 'ApiClientError';
     this.status = status;
     this.details = details;
+    Object.setPrototypeOf(this, ApiClientError.prototype);
+  }
+
+  static [Symbol.hasInstance](instance: unknown): boolean {
+    return (
+      instance !== null &&
+      typeof instance === 'object' &&
+      (('name' in (instance as Record<string, unknown>) && (instance as Record<string, unknown>).name === 'ApiClientError') ||
+        Object.prototype.isPrototypeOf.call(ApiClientError.prototype, instance))
+    );
   }
 }
+
+export function isApiClientError(err: unknown): err is ApiClientError {
+  return (
+    err instanceof ApiClientError ||
+    (typeof err === 'object' && err !== null && (err as { name?: string }).name === 'ApiClientError')
+  );
+}
+
 
 interface ApiFetchOptions extends Omit<RequestInit, 'body'> {
   /** Plain object → JSON; FormData is sent untouched. */
