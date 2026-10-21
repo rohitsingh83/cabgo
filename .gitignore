@@ -37,3 +37,4 @@ supabase/.branches
 supabase/.temp
 
 .github/
+.vercel
