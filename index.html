@@ -56,6 +56,8 @@
       box-shadow: 0 0 20px rgba(37, 99, 235, 0.35);
     }
   </style>
+  <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
+  <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
 </head>
 <body class="min-h-screen selection:bg-blue-600 selection:text-white">
   <!-- Top Navigation -->
@@ -250,6 +252,15 @@
               <p class="text-xs text-slate-400 mt-2">Emergency trigger alerting contacts via SMS and instantly surfacing on live admin security desks.</p>
             </div>
           </div>
+
+          <!-- Live Interactive Map Simulation Preview -->
+          <div class="mt-4 rounded-2xl overflow-hidden border border-white/10 relative shadow-2xl bg-slate-950">
+            <div class="absolute top-3 left-3 z-[1000] flex items-center gap-2 px-3 py-1.5 rounded-xl glass-panel border border-blue-500/30 text-blue-400 text-xs font-semibold backdrop-blur-md">
+              <span class="h-2 w-2 rounded-full bg-emerald-400 animate-pulse"></span>
+              <span>Live GPS Telemetry & Routing</span>
+            </div>
+            <div id="liveMapPreview" class="w-full h-72 sm:h-80 z-0"></div>
+          </div>
         </div>
 
         <!-- Driver Tab Content -->
@@ -433,10 +444,90 @@
       document.getElementById('content-' + role).classList.remove('hidden');
       const activeBtn = document.getElementById('tab-' + role);
       activeBtn.className = 'flex-1 py-3 px-4 rounded-xl font-bold text-sm text-white bg-blue-600 shadow-md transition-all';
+      
+      if (role === 'rider' && window.cabgoLiveMap) {
+        setTimeout(() => window.cabgoLiveMap.invalidateSize(), 150);
+      }
     }
 
     // Initial calculation
     updateFare();
+
+    // Initialize Interactive Live Map Simulation
+    document.addEventListener('DOMContentLoaded', () => {
+      if (typeof L === 'undefined') return;
+
+      const pickupCoord = [19.0596, 72.8295]; // Bandra West
+      const dropoffCoord = [19.0896, 72.8656]; // Airport T2
+      const centerCoord = [19.0750, 72.8480];
+
+      const map = L.map('liveMapPreview', {
+        center: centerCoord,
+        zoom: 13,
+        zoomControl: false,
+        attributionControl: false
+      });
+      window.cabgoLiveMap = map;
+
+      // CartoDB Dark Matter tile layer for sleek dark theme matching CabGo
+      L.tileLayer('https://{s}.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}{r}.png', {
+        maxZoom: 19
+      }).addTo(map);
+
+      // Custom icon creator
+      const createIcon = (emoji, bg) => L.divIcon({
+        html: `<div style="background:${bg}; width:32px; height:32px; border-radius:50%; display:flex; align-items:center; justify-content:center; box-shadow:0 0 14px rgba(0,0,0,0.6); border:2px solid white; font-size:16px;">${emoji}</div>`,
+        className: '',
+        iconSize: [32, 32],
+        iconAnchor: [16, 16]
+      });
+
+      // Add Pickup & Dropoff pins
+      L.marker(pickupCoord, { icon: createIcon('📍', '#10b981') }).addTo(map).bindPopup('<b>Pickup</b>: Bandra West');
+      L.marker(dropoffCoord, { icon: createIcon('🏁', '#ef4444') }).addTo(map).bindPopup('<b>Destination</b>: Airport Terminal 2');
+
+      // Route polyline with glow effect
+      const routePoints = [
+        pickupCoord,
+        [19.0640, 72.8350],
+        [19.0680, 72.8420],
+        [19.0750, 72.8520],
+        [19.0820, 72.8590],
+        dropoffCoord
+      ];
+
+      L.polyline(routePoints, {
+        color: '#3b82f6',
+        weight: 5,
+        opacity: 0.9,
+        lineCap: 'round',
+        lineJoin: 'round'
+      }).addTo(map);
+
+      // Nearby animated driver cars
+      const driverPositions = [
+        [19.0680, 72.8390],
+        [19.0610, 72.8250],
+        [19.0790, 72.8580]
+      ];
+
+      const driverMarkers = driverPositions.map((pos) => {
+        return L.marker(pos, { icon: createIcon('🚗', '#2563eb') }).addTo(map);
+      });
+
+      // Subtle animation simulating live GPS drift
+      setInterval(() => {
+        driverMarkers.forEach(m => {
+          const latLng = m.getLatLng();
+          const dLat = (Math.random() - 0.5) * 0.0004;
+          const dLng = (Math.random() - 0.5) * 0.0004;
+          m.setLatLng([latLng.lat + dLat, latLng.lng + dLng]);
+        });
+      }, 2000);
+
+      // Recompute size when tab switches to ensure proper rendering
+      window.addEventListener('resize', () => map.invalidateSize());
+    });
   </script>
 </body>
 </html>
