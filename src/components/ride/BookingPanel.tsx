@@ -11,7 +11,7 @@ import { VehicleSelector } from '@/components/ride/VehicleSelector';
 import { Button } from '@/components/ui/button';
 import { toast } from '@/components/ui/use-toast';
 import { VEHICLES } from '@/lib/constants';
-import { ApiClientError, apiFetch, isApiClientError } from '@/lib/api-client';
+import { apiFetch, isApiClientError } from '@/lib/api-client';
 import { formatCurrency } from '@/lib/utils';
 import { useBookingStore } from '@/store/useBookingStore';
 import type { CreateRideResult, FareEstimateResponse, SavedPlace } from '@/types';
