@@ -47,9 +47,11 @@ export const getCurrentUser = cache(async (): Promise<User | null> => {
           if (parsed && (parsed.full_name || parsed.fullName || parsed.email || parsed.phone)) {
             const role = (parsed.role as UserRole) || 'rider';
             const baseUser = role === 'admin' ? DEMO_ADMIN : role === 'driver' ? DEMO_DRIVER : DEMO_RIDER;
+            const isUuid = Boolean(parsed.id && /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(parsed.id));
+            const id = isUuid ? parsed.id : baseUser.id;
             return {
               ...baseUser,
-              id: parsed.id || baseUser.id,
+              id,
               clerk_id: parsed.id || baseUser.clerk_id,
               full_name: parsed.fullName || parsed.full_name || baseUser.full_name,
               email: parsed.email || baseUser.email,

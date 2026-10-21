@@ -5,7 +5,6 @@ import { getPaymentDues } from '@/lib/payments/service';
 import { dispatchRide } from '@/lib/rides/matching';
 import { quoteRide, sameAmount } from '@/lib/rides/pricing';
 import { createSupabaseAdminClient } from '@/lib/supabase/admin';
-import { generateRideOtp } from '@/lib/rides/otp';
 import { createRideSchema, ridesListQuerySchema } from '@/lib/validations';
 import type { CreateRideResult, Paginated, RideListItem, RideStatus, UserSummary } from '@/types';
 
@@ -113,7 +112,6 @@ export const POST = withApi(async (request) => {
     );
   }
 
-  const rideOtp = generateRideOtp();
   const { data: ride, error } = await db
     .from('rides')
     .insert({
@@ -135,7 +133,6 @@ export const POST = withApi(async (request) => {
       surge_multiplier: estimate.surgeMultiplier,
       promo_code_id: estimate.promo?.promoId ?? null,
       route_polyline: quote.route.polyline,
-      otp: rideOtp,
     })
     .select('*')
     .single();
